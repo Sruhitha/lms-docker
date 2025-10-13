@@ -1,0 +1,28 @@
+# ---------- Build stage ----------
+FROM node:20-alpine AS builder
+WORKDIR /app
+
+# Install git
+RUN apk add --no-cache git
+
+# Clone your frontend repo
+RUN git clone https://github.com/Sruhitha/LMS-frontend.git .
+
+# Install dependencies and build
+RUN npm install
+RUN npm run build
+
+# ---------- Run stage ----------
+FROM nginx:alpine
+WORKDIR /usr/share/nginx/html
+
+# Copy custom nginx.conf (from same folder as this Dockerfile)
+COPY nginx.conf /etc/nginx/nginx.conf
+
+# Copy built frontend files
+COPY --from=builder /app/dist ./
+
+EXPOSE 80
+CMD ["nginx", "-g", "daemon off;"]
+
+    
